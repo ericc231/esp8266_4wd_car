@@ -1,0 +1,126 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <script>
+        //        var addr = location.hostname;
+        var addr = '192.168.2.37';
+
+        var connection = new WebSocket('ws://' + addr + ':81/', ['arduino']);
+        connection.onopen = function () {
+            connection.send('Connect ' + new Date());
+        };
+        connection.onerror = function (error) {
+            console.log('WebSocket Error ', error);
+        };
+        connection.onmessage = function (e) {
+            console.log('Server: ', e.data);
+        };
+        function sendRGB() {
+            var r = parseInt(document.getElementById('r').value).toString(16);
+            console.log('r: ', document.getElementById('r').value);
+            var g = parseInt(document.getElementById('g').value).toString(16);
+            console.log('g: ', document.getElementById('g').value);
+            var b = parseInt(document.getElementById('b').value).toString(16);
+            if (r.length < 2) {
+                r = '0' + r;
+            }
+            if (g.length < 2) {
+                g = '0' + g;
+            }
+            if (b.length < 2) {
+                b = '0' + b;
+            }
+            var rgb = '#' + r + g + b;
+            console.log('RGB: ' + rgb);
+            connection.send(rgb);
+        }
+
+        var driveForward = false;
+        var driveBack = false;
+        var driveLeft = false;
+        var driveRight = false;
+
+        function onForward() {
+            driveForward = true;
+            connection.send('#f255f255');
+            //var s = readSpeed();
+            //var cmd = "amf" + s + "f" + s;
+            //cmd = addOb(cmd);
+            //doAjax(cmd + "z");
+        }
+
+        function onBack() {
+            driveBack = true;
+            connection.send('#b255b255');
+            //var s = readSpeed();
+            //var cmd = "amb" + s + "b" + s;
+            //cmd = addOb(cmd);
+            //doAjax(cmd + "z");
+        }
+
+        function onLeft() {
+            driveLeft = true;
+            connection.send('#b255f255');
+            //var s = readTurnSpeed();
+            //var cmd = "amb" + s + "f" + s;
+            //cmd = addOb(cmd);
+            //doAjax(cmd + "z");
+        }
+
+        function onRight() {
+            driveRight = true;
+            connection.send('#f255b255');
+            //var s = readTurnSpeed();
+            //var cmd = "amf" + s + "b" + s;
+            //cmd = addOb(cmd);
+            //doAjax(cmd + "z");
+        }
+
+        function onStop() {
+            driveForward = false;
+            driveBack = false;
+            driveLeft = false;
+            driveRight = false;
+            connection.send('#f000b000');
+            //var s = "000";
+            //var cmd = "amb" + s + "b" + s;
+            //cmd = addOb(cmd);
+            //doAjax(cmd + "z");
+        }
+
+
+
+    </script>
+</head>
+<body>LED Control:<br><br>R: <input id="r" type="range" min="0" max="255" step="1" onchange="sendRGB();"><br>G: <input
+        id="g" type="range" min="0" max="255" step="1" onchange="sendRGB();"><br>B: <input id="b" type="range" min="0"
+                                                                                           max="255" step="1"
+                                                                                           onchange="sendRGB();"><br>
+
+<table border="0">
+    <tr>
+        <td colspan="3">
+            <button type="button" onmousedown="javascript: onForward();" onmouseup="javascript: onStop();">Forward</button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button type="button" onmousedown="javascript: onLeft();" onmouseup="javascript: onStop();">Left</button>
+        </td>
+        <td>
+            &nbsp;
+        </td>
+        <td>
+            <button type="button" onmousedown="javascript: onRight();" onmouseup="javascript: onStop();">Right</button>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <button type="button" onmousedown="javascript: onBack();" onmouseup="javascript: onStop();">Backward</button>
+        </td>
+    </tr>
+</table>
+
+
+</body>
+</html>
