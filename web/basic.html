@@ -58,6 +58,50 @@
 </div>
 <script src="js/virtualjoystick.js"></script>
 <script>
+    //        var addr = location.hostname;
+    var addr = '192.168.2.37';
+
+    var connection = new WebSocket('ws://' + addr + ':81/', ['arduino']);
+    connection.onopen = function () {
+        connection.send('Connect ' + new Date());
+    };
+    connection.onerror = function (error) {
+        console.log('WebSocket Error ', error);
+    };
+    connection.onmessage = function (e) {
+        console.log('Server: ', e.data);
+    };
+
+    function send(cmd) {
+        connection.send(cmd);
+    }
+
+    function buildCmd(coord) {
+        var l = getDirAndSpeed(coord.x);
+        var r = getDirAndSpeed(coord.y);
+        return '#' + l.d + l.s + r.d + r.s;
+    }
+
+    function getDirAndSpeed(c) {
+        var d;
+        if (c >= 0) {
+            d = 'f';
+        } else {
+            d = 'b';
+            c = -c;
+        }
+        if (c < 100) {
+            c = 0;
+        }
+        var s = pad(c);
+        return {d: d, s: s};
+    }
+
+    function pad(num) {
+        var s = "00" + num;
+        return s.substr(s.length - 3);
+    }
+
     console.log("touchscreen is", VirtualJoystick.touchScreenAvailable() ? "available" : "not available");
 
     var sc45 = sinDegrees(45);
@@ -80,18 +124,22 @@
 
     setInterval(function () {
         var coord = calc();
+        var cmd = buildCmd(coord);
         var outputEl = document.getElementById('result');
         outputEl.innerHTML = '<b>Result:</b> '
                 + ' x:' + coord.x
                 + ' y:' + coord.y
+                + '<br/>'
+                + 'cmd: ' + cmd
                 + '<br/>'
                 + ' dx:' + joystick.deltaX()
                 + ' dy:' + joystick.deltaY()
                 + (joystick.right() ? ' right' : '')
                 + (joystick.up() ? ' up' : '')
                 + (joystick.left() ? ' left' : '')
-                + (joystick.down() ? ' down' : '')
-    }, 1 / 10 * 1000);
+                + (joystick.down() ? ' down' : '');
+        send(cmd);
+    }, 1 / 5 * 1000);
 
     function calc() {
         var x = joystick.deltaX();
