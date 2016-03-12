@@ -42,17 +42,9 @@
 <body>
 <div id="container"></div>
 <div id="info">
-    <a href="http://learningthreejs.com/blog/2011/12/26/let-s-make-a-3d-game-virtual-joystick/" target="_blank">VirtualJoystick.js</a>
-    A library javascript to provide a virtual joystick on touchscreen.
-    -
-    inspired by this
-    <a href="http://sebleedelisle.com/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/">post</a>
-    from
-    <a href="http://sebleedelisle.com/">seb.ly</a>
+    A: <span id="amp">123</span>
     <br/>
-    Touch the screen and move
-    -
-    works with mouse too as debug
+    V: <span id="volt">567</span>
     <br/>
     <span id="result"></span>
 </div>
@@ -70,6 +62,8 @@
     };
     connection.onmessage = function (e) {
         console.log('Server: ', e.data);
+        var outputEl = document.getElementById('amp');
+        outputEl.innerHTML = e.data;
     };
 
     function send(cmd) {
@@ -160,7 +154,7 @@
                 + (joystick.left() ? ' left' : '')
                 + (joystick.down() ? ' down' : '');
         send(cmd);
-    }, 1 / 5 * 1000);
+    }, 1 / 30 * 1000);
 
     function calc() {
         var x = joystick.deltaX();

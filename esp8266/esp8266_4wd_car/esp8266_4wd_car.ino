@@ -14,6 +14,7 @@
 #include <ESP8266mDNS.h>
 #include <Hash.h>
 #include <Wire.h>
+#include <SimpleTimer.h>
 #define SLAVE_ADDR 0x31 // Slave address, should be changed for other slaves
 
 #define USE_SERIAL Serial
@@ -24,10 +25,13 @@ ESP8266WiFiMulti WiFiMulti;
 ESP8266WebServer server = ESP8266WebServer(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 
+SimpleTimer ttt;
+
 char lDir = 'f';
 char rDir = 'f';
 int lPwm = 255;
 int rPwm = 255;
+uint8_t clientNum = -1;
 
 byte dirToByte(char cmd) {
   switch (cmd) {
@@ -78,6 +82,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
     switch(type) {
         case WStype_DISCONNECTED:
             USE_SERIAL.printf("[%u] Disconnected!\n", num);
+            clientNum = -1;
             break;
         case WStype_CONNECTED: {
             IPAddress ip = webSocket.remoteIP(num);
@@ -85,6 +90,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 
             // send message to client
             webSocket.sendTXT(num, "Connected");
+            clientNum = num;
         }
             break;
         case WStype_TEXT:
@@ -110,6 +116,16 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
             break;
     }
 
+}
+
+void zzzzz()
+{
+  if (clientNum != -1) {
+    String s = "#";
+    s += "a" + String(millis());
+    s += "v" + String(micros());
+  webSocket.sendTXT(clientNum, s);
+  }
 }
 
 void setup() {
@@ -155,11 +171,14 @@ void setup() {
     // Add service to MDNS
     MDNS.addService("http", "tcp", 80);
     MDNS.addService("ws", "tcp", 81);
+
+    ttt.setInterval(1000L, zzzzz);
 }
 
 
 void loop() {
     webSocket.loop();
     server.handleClient();
+    ttt.run();
 }
 
