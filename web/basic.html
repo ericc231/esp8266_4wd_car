@@ -76,9 +76,33 @@
         connection.send(cmd);
     }
 
+    var sc45 = sinDegrees(45);
+    console.log(sc45);
+    var R1 = 100;
+    var R2 = R1 * sc45;
+
     function buildCmd(coord) {
-        var l = getDirAndSpeed(coord.x);
-        var r = getDirAndSpeed(coord.y);
+        var x = coord.x;
+        var y = coord.y;
+        if (y > R2 && Math.abs(x) <= y) {
+            x = R2 * x / y;
+            y = R2;
+        } else if (x > R2 && Math.abs(y) <= x) {
+            y = R2 * y / x;
+            x = R2;
+        } else if (y < -R2 && Math.abs(x) <= -y) {
+            x = -R2 * x / y;
+            y = -R2;
+        } else if (x < -R2 && Math.abs(y) <= -x) {
+            y = -R2 * y / x;
+            x = -R2;
+        }
+
+        x = x * 255 / R2;
+        y = y * 255 / R2;
+
+        var l = getDirAndSpeed(Math.round(x));
+        var r = getDirAndSpeed(Math.round(y));
         return '#' + l.d + l.s + r.d + r.s;
     }
 
@@ -91,7 +115,7 @@
             c = -c;
         }
         if (c < 100) {
-            c = 0;
+//            c = 0;
         }
         var s = pad(c);
         return {d: d, s: s};
@@ -104,9 +128,6 @@
 
     console.log("touchscreen is", VirtualJoystick.touchScreenAvailable() ? "available" : "not available");
 
-    var sc45 = sinDegrees(45);
-
-    console.log(sc45);
 
     var joystick = new VirtualJoystick({
         container: document.getElementById('container'),
@@ -146,8 +167,6 @@
         var y = -joystick.deltaY();
         var x1 = sc45 * (x + y);
         var y1 = sc45 * (-x + y);
-        x1 = Math.round(x1 * 255 / 100);
-        y1 = Math.round(y1 * 255 / 100);
         return {x: x1, y: y1};
     }
 
