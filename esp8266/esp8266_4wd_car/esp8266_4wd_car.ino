@@ -136,7 +136,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
             break;
 
         case WStype_BIN:
-            USE_SERIAL.printf("[%u] get binary lenght: %u\n", num, lenght);
+//            USE_SERIAL.printf("[%u] get binary lenght: %u\n", num, lenght);
 //            hexdump(payload, lenght);
 
             if (payload[0] == 0x0C && lenght == 5) {
@@ -153,17 +153,27 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 void zzzzz()
 {
   if (clientNum != -1) {
-    uint8_t payload[5];
+    unsigned long uptime = millis();
+    uptime = uptime / 1000;
+    
+    int len = 8;
+    int i = 0;
+    uint8_t payload[len];
     int a = 345;//(millis() / 1000) % 1000;
     int v = 987;//micros() % 1000;
-    payload[0] = 0x0A;
-    payload[1] = a >> 8;
-    payload[2] = a & 255;
-    payload[3] = v >> 8;
-    payload[4] = v & 255;
+    payload[i++] = 0x0A;
+
+    payload[i++] = uptime >> 16;
+    payload[i++] = (uptime << 8) >> 16;
+    payload[i++] = uptime & 255;
+    
+    payload[i++] = a >> 8;
+    payload[i++] = a & 255;
+    payload[i++] = v >> 8;
+    payload[i++] = v & 255;
     
 //  webSocket.sendTXT(clientNum, s);
-  webSocket.sendBIN(clientNum, payload, 5);
+  webSocket.sendBIN(clientNum, payload, len);
   }
 }
 

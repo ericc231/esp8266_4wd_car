@@ -42,6 +42,8 @@
 <body>
 <div id="container"></div>
 <div id="info">
+    Uptime: <span id="uptime"></span>
+    <br/>
     A: <span id="amp"></span>
     <br/>
     V: <span id="volt"></span>
@@ -64,12 +66,17 @@
     connection.onmessage = function (e) {
 //        console.log('Server: ', e.data);
         var bytearray = new Uint8Array(event.data);
-        if (bytearray[0] == 0x0A && bytearray.length == 5) {
-            var amp = (bytearray[1] << 8) | bytearray[2];
-            var outputEl = document.getElementById('amp');
+        if (bytearray[0] == 0x0A && bytearray.length == 8) {
+
+            var uptime = (bytearray[1] << 16) | (bytearray[2] << 8) | bytearray[3];
+            var outputEl = document.getElementById('uptime');
+            outputEl.innerHTML = uptime;
+
+            var amp = (bytearray[4] << 8) | bytearray[5];
+            outputEl = document.getElementById('amp');
             outputEl.innerHTML = amp;
 
-            var volt = (bytearray[3] << 8) | bytearray[4];
+            var volt = (bytearray[6] << 8) | bytearray[7];
             outputEl = document.getElementById('volt');
             outputEl.innerHTML = volt;
         }
