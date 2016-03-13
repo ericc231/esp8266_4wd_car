@@ -66,6 +66,26 @@ void updateSlave() {
   //}
 }
 
+void updateSlave2(uint8_t * payload) {
+  //if (cmdUpdateMotor || cmdUpdateServoH || cmdUpdateServoV) {
+    Wire.beginTransmission(SLAVE_ADDR);
+  //  if (cmdUpdateMotor) {
+      Wire.write(0x0C);
+
+      Wire.write(payload[1]);
+      Wire.write(payload[2]);
+      Wire.write(payload[1]);
+      Wire.write(payload[2]);
+
+      Wire.write(payload[3]);
+      Wire.write(payload[4]);
+      Wire.write(payload[3]);
+      Wire.write(payload[4]);
+    //}
+    Wire.endTransmission();
+  //}
+}
+
 void parseMotorCommand(String cmdStr, int pos) {
   lDir = cmdStr.charAt(pos + 1);
   rDir = cmdStr.charAt(pos + 5);
@@ -114,6 +134,18 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
             }
 
             break;
+
+        case WStype_BIN:
+            USE_SERIAL.printf("[%u] get binary lenght: %u\n", num, lenght);
+//            hexdump(payload, lenght);
+
+            if (payload[0] == 0x0C && lenght == 5) {
+              updateSlave2(payload);
+            }
+            // send message to client
+            // webSocket.sendBIN(num, payload, lenght);
+            break;
+            
     }
 
 }
@@ -121,10 +153,17 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 void zzzzz()
 {
   if (clientNum != -1) {
-    String s = "#";
-    s += "a" + String(millis());
-    s += "v" + String(micros());
-  webSocket.sendTXT(clientNum, s);
+    uint8_t payload[5];
+    int a = 345;//(millis() / 1000) % 1000;
+    int v = 987;//micros() % 1000;
+    payload[0] = 0x0A;
+    payload[1] = a >> 8;
+    payload[2] = a & 255;
+    payload[3] = v >> 8;
+    payload[4] = v & 255;
+    
+//  webSocket.sendTXT(clientNum, s);
+  webSocket.sendBIN(clientNum, payload, 5);
   }
 }
 

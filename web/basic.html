@@ -42,9 +42,9 @@
 <body>
 <div id="container"></div>
 <div id="info">
-    A: <span id="amp">123</span>
+    A: <span id="amp"></span>
     <br/>
-    V: <span id="volt">567</span>
+    V: <span id="volt"></span>
     <br/>
     <span id="result"></span>
 </div>
@@ -54,20 +54,30 @@
     var addr = '192.168.2.37';
 
     var connection = new WebSocket('ws://' + addr + ':81/', ['arduino']);
+    connection.binaryType = "arraybuffer";
     connection.onopen = function () {
-        connection.send('Connect ' + new Date());
+        //connection.send('Connect ' + new Date());
     };
     connection.onerror = function (error) {
         console.log('WebSocket Error ', error);
     };
     connection.onmessage = function (e) {
-        console.log('Server: ', e.data);
-        var outputEl = document.getElementById('amp');
-        outputEl.innerHTML = e.data;
+//        console.log('Server: ', e.data);
+        var bytearray = new Uint8Array(event.data);
+        if (bytearray[0] == 0x0A && bytearray.length == 5) {
+            var amp = (bytearray[1] << 8) | bytearray[2];
+            var outputEl = document.getElementById('amp');
+            outputEl.innerHTML = amp;
+
+            var volt = (bytearray[3] << 8) | bytearray[4];
+            outputEl = document.getElementById('volt');
+            outputEl.innerHTML = volt;
+        }
     };
 
     function send(cmd) {
-        connection.send(cmd);
+//        connection.send(cmd);
+        connection.send(cmd.buffer);
     }
 
     var sc45 = sinDegrees(45);
@@ -95,9 +105,29 @@
         x = x * 255 / R2;
         y = y * 255 / R2;
 
-        var l = getDirAndSpeed(Math.round(x));
-        var r = getDirAndSpeed(Math.round(y));
-        return '#' + l.d + l.s + r.d + r.s;
+        //var l = getDirAndSpeed(Math.round(x));
+        //var r = getDirAndSpeed(Math.round(y));
+        //return '#' + l.d + l.s + r.d + r.s;
+
+        var bytearray = new Uint8Array(5);
+        bytearray[0] = 0x0C;
+        bytearray[1] = getDir(x);
+        bytearray[2] = getSpeed(x);
+        bytearray[3] = getDir(y);
+        bytearray[4] = getSpeed(y);
+
+        return bytearray;
+    }
+
+    function getDir(c) {
+        return c >= 0 ? 1 : 2;
+    }
+
+    function getSpeed(c) {
+        if (c < 0) {
+            c = -c;
+        }
+        return c;
     }
 
     function getDirAndSpeed(c) {
@@ -154,7 +184,7 @@
                 + (joystick.left() ? ' left' : '')
                 + (joystick.down() ? ' down' : '');
         send(cmd);
-    }, 1 / 30 * 1000);
+    }, 1 / 20 * 1000);
 
     function calc() {
         var x = joystick.deltaX();
