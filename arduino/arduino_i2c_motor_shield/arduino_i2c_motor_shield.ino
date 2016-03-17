@@ -12,6 +12,10 @@ Servo servoH;          // horizontal servo
 Servo servoV;         // vertical servo
 int volatile hServoVal;
 int volatile vServoVal;
+int volatile valueA0;
+int volatile valueA1;
+unsigned long previousTime = 0;
+#define READ_PERIOD 50 // period in milliseconds between sensor read
 
 boolean volatile cmdUpdateMotor = false;
 boolean volatile cmdUpdateServoH = false;
@@ -36,8 +40,14 @@ int pwms[4] = {0, 0, 0, 0};
 // motors end
 
 void setup() {
+//  Serial.begin(115200);
+  
   Wire.begin(SLAVE_ADDR);
   Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
+
+  pinMode (A0, INPUT);
+  pinMode (A1, INPUT);
 
   pinMode(latchPin, OUTPUT);
   pinMode(dataPin, OUTPUT);  
@@ -54,8 +64,10 @@ void setup() {
 
 void loop() {
   if (cmdUpdateMotor) {
+    noInterrupts();
     cmdUpdateMotor = false;
     updateMotorShield();
+    interrupts();
   }
   if (cmdUpdateServoH) {
     cmdUpdateServoH = false;
@@ -65,6 +77,23 @@ void loop() {
     cmdUpdateServoV = false;
     updateServo(servoV, vServoVal);
   }
+  unsigned long currTime = millis();
+  unsigned long timeDiff = currTime - previousTime;
+  if (timeDiff >= READ_PERIOD) {
+    readSensor();
+//    Serial.print(valueA0);
+//    Serial.print(" ");
+//    Serial.println(valueA1);
+  }  
+}
+
+void readSensor() {
+  int a0 = analogRead(A0);
+  int a1 = analogRead(A1);
+  noInterrupts();
+  valueA0 = a0;
+  valueA1 = a1;
+  interrupts();
 }
 
 void updateServo(Servo servo, int value) {
@@ -146,6 +175,13 @@ void receiveEvent(int bytesReceived)
      }    
   }
   
-  }
+}
 
-
+void requestEvent() {
+  byte arr[4];
+  arr[0] = valueA0 >> 8;
+  arr[1] = valueA0 & 0xFF;
+  arr[2] = valueA1 >> 8;
+  arr[3] = valueA1 & 0xFF;
+  Wire.write(arr, 4);
+}

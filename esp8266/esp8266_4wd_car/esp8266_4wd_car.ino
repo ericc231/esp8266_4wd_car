@@ -32,6 +32,8 @@ char rDir = 'f';
 int lPwm = 255;
 int rPwm = 255;
 uint8_t clientNum = -1;
+int valueA0;
+int valueA1;
 
 byte dirToByte(char cmd) {
   switch (cmd) {
@@ -150,17 +152,33 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 
 }
 
+void readSensors() {
+  int res = Wire.requestFrom(SLAVE_ADDR, 4);
+  if (res)
+  {
+    valueA0 = Wire.read() << 8 | Wire.read();
+    valueA1 = Wire.read() << 8 | Wire.read();
+  }
+  else
+  {
+    valueA0 = -1;
+    valueA1 = -1;
+  }
+}
+
 void zzzzz()
 {
   if (clientNum != -1) {
     unsigned long uptime = millis();
     uptime = uptime / 1000;
+
+    readSensors();
     
     int len = 8;
     int i = 0;
     uint8_t payload[len];
-    int a = 345;//(millis() / 1000) % 1000;
-    int v = 987;//micros() % 1000;
+    int a = valueA0;
+    int v = valueA1;
     payload[i++] = 0x0A;
 
     payload[i++] = uptime >> 16;
@@ -221,7 +239,7 @@ void setup() {
     MDNS.addService("http", "tcp", 80);
     MDNS.addService("ws", "tcp", 81);
 
-    ttt.setInterval(1000L, zzzzz);
+    ttt.setInterval(50L, zzzzz);
 }
 
 
