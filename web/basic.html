@@ -52,6 +52,8 @@
     <br/>
     <span id="result"></span>
 </div>
+<br/>
+<button onclick="sendPing()">Ping</button> time: <span id="pingTime"></span>
 <table>
     <tr>
         <td>
@@ -102,6 +104,9 @@
     connection.onmessage = function (e) {
 //        console.log('Server: ', e.data);
         var bytearray = new Uint8Array(event.data);
+        if (bytearray[0] == 0x0B) {
+            displayPong();
+        } else
         if (bytearray[0] == 0x0A && bytearray.length == 8) {
 
             var uptime = (bytearray[1] << 16) | (bytearray[2] << 8) | bytearray[3];
@@ -117,6 +122,25 @@
             outputEl.innerHTML = volt;
         }
     };
+
+    var pingStart;
+
+    function sendPing() {
+        var outputEl = document.getElementById('pingTime');
+        outputEl.innerHTML = '';
+        pingStart = new Date().getTime();
+        var ba = new Uint8Array(1);
+        ba[0] = 0x01;
+        send2(ba);
+    }
+
+    function displayPong() {
+        var end = new Date().getTime();
+        var time = end - pingStart;
+        console.log("pong: " + time)
+        var outputEl = document.getElementById('pingTime');
+        outputEl.innerHTML = time;
+    }
 
     function runF(num) {
         var ba = buildCmd1Wheel(num, 1, 255);

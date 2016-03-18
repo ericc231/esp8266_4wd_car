@@ -112,6 +112,12 @@ void parseMotorCommand(String cmdStr, int pos) {
   //      Serial.println(rPwm);
 }
 
+void sendPong(uint8_t clNum) {
+    uint8_t payload[1];
+    payload[0] = 0x0B;
+    webSocket.sendBIN(clNum, payload, 1);
+}
+
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght) {
 
     switch(type) {
@@ -160,6 +166,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
             if (payload[0] == 0x0D) {
 //              lenght == 4
               updateWheel(payload);
+            } else if (payload[0] == 0x01) {
+              sendPong(num);
             }
             // send message to client
             // webSocket.sendBIN(num, payload, lenght);
@@ -186,10 +194,12 @@ void readSensors() {
 void zzzzz()
 {
   if (clientNum != -1) {
+    unsigned long t1 = millis();
     unsigned long uptime = millis();
     uptime = uptime / 1000;
 
     readSensors();
+    unsigned long t2 = millis();
     
     int len = 8;
     int i = 0;
@@ -206,9 +216,13 @@ void zzzzz()
     payload[i++] = a & 255;
     payload[i++] = v >> 8;
     payload[i++] = v & 255;
+
+unsigned long t3 = millis();
     
-//  webSocket.sendTXT(clientNum, s);
-  webSocket.sendBIN(clientNum, payload, len);
+//  webSocket.sendBIN(clientNum, payload, len);
+  USE_SERIAL.print(t2 - t1);
+  USE_SERIAL.print(" ");
+  USE_SERIAL.println(t3 - t1);
   }
 }
 
@@ -256,7 +270,7 @@ void setup() {
     MDNS.addService("http", "tcp", 80);
     MDNS.addService("ws", "tcp", 81);
 
-    ttt.setInterval(50L, zzzzz);
+    ttt.setInterval(1000L, zzzzz);
 }
 
 
