@@ -12,11 +12,11 @@
         }
 
         #info {
-            position: absolute;
+            /*position: absolute;*/
             top: 0px;
             width: 100%;
             padding: 5px;
-            text-align: center;
+            /*text-align: center;*/
         }
 
         #info a {
@@ -29,8 +29,10 @@
         }
 
         #container {
-            width: 100%;
-            height: 100%;
+            /*width: 100%;*/
+            /*height: 100%;*/
+            width: 300px;
+            height: 300px;
             overflow: hidden;
             padding: 0;
             margin: 0;
@@ -50,6 +52,22 @@
     <br/>
     <span id="result"></span>
 </div>
+<table>
+    <tr>
+        <td>
+            <input type="range" id="speed1" min="0" max="255">
+            <br/>
+            <button onclick="runWheel(1);">Run</button>
+            <button onclick="stopWheel(1);">Stop</button>
+        </td>
+        <td>
+            <input type="range" id="speed2" min="0" max="255">
+            <br/>
+            <button onclick="runWheel(2);">Run</button>
+            <button onclick="stopWheel(2);">Stop</button>
+        </td>
+    </tr>
+</table>
 <script src="js/virtualjoystick.js"></script>
 <script>
     //        var addr = location.hostname;
@@ -82,9 +100,24 @@
         }
     };
 
+    function runWheel(num) {
+        var ba = bbb(0, 255);
+        send2(ba);
+    }
+
+    function stopWheel(num) {
+        var ba = bbb(0, 0);
+        send2(ba);
+    }
+
     function send(cmd) {
 //        connection.send(cmd);
         connection.send(cmd.buffer);
+    }
+
+    function send2(cmd) {
+        console.log(cmd);
+        connection.send(cmd);
     }
 
     var sc45 = sinDegrees(45);
@@ -115,14 +148,17 @@
         //var l = getDirAndSpeed(Math.round(x));
         //var r = getDirAndSpeed(Math.round(y));
         //return '#' + l.d + l.s + r.d + r.s;
+        var bytearray = bbb(x, y);
+        return bytearray;
+    }
 
+    function bbb(x, y) {
         var bytearray = new Uint8Array(5);
         bytearray[0] = 0x0C;
         bytearray[1] = getDir(x);
         bytearray[2] = getSpeed(x);
         bytearray[3] = getDir(y);
         bytearray[4] = getSpeed(y);
-
         return bytearray;
     }
 
@@ -164,8 +200,10 @@
         container: document.getElementById('container'),
         mouseSupport: true,
         limitStickTravel: true,
-        stickRadius: 100
-
+        stickRadius: 100,
+        stationaryBase: true,
+        baseX: 150,
+        baseY: 150,
     });
     joystick.addEventListener('touchStart', function () {
         console.log('down')
@@ -178,18 +216,7 @@
         var coord = calc();
         var cmd = buildCmd(coord);
         var outputEl = document.getElementById('result');
-        outputEl.innerHTML = '<b>Result:</b> '
-                + ' x:' + coord.x
-                + ' y:' + coord.y
-                + '<br/>'
-                + 'cmd: ' + cmd
-                + '<br/>'
-                + ' dx:' + joystick.deltaX()
-                + ' dy:' + joystick.deltaY()
-                + (joystick.right() ? ' right' : '')
-                + (joystick.up() ? ' up' : '')
-                + (joystick.left() ? ' left' : '')
-                + (joystick.down() ? ' down' : '');
+        outputEl.innerHTML = '<b>cmd</b>: ' + cmd;
         send(cmd);
     }, 1 / 20 * 1000);
 

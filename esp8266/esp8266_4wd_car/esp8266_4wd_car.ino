@@ -84,7 +84,9 @@ void updateSlave2(uint8_t * payload) {
       Wire.write(payload[3]);
       Wire.write(payload[4]);
     //}
-    Wire.endTransmission();
+    if (Wire.endTransmission() != 0) {
+      USE_SERIAL.println("Error");
+    }
   //}
 }
 

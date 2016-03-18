@@ -10,8 +10,8 @@ const int hServoPin = 9; // Servo library disables analogWrite() (PWM) functiona
 const int vServoPin = 10; // Servo library disables analogWrite() (PWM) functionality on pins 9 and 10
 Servo servoH;          // horizontal servo
 Servo servoV;         // vertical servo
-int volatile hServoVal;
-int volatile vServoVal;
+int volatile cmdServoValH;
+int volatile cmdServoValV;
 int volatile valueA0;
 int volatile valueA1;
 unsigned long previousTime = 0;
@@ -34,8 +34,11 @@ uint8_t latch_state = 0;
 
 int dir1Pins[4] = {0, 2, 5, 7};
 int dir2Pins[4] = {1, 3, 4, 6};
-byte dirs[4] = {3, 3, 3, 3};
-int pwms[4] = {0, 0, 0, 0};
+volatile byte cmdDirs[4];
+volatile int cmdPwms[4];
+
+byte dirs[4];
+int pwms[4];
 
 // motors end
 
@@ -66,15 +69,25 @@ void loop() {
   if (cmdUpdateMotor) {
     noInterrupts();
     cmdUpdateMotor = false;
-    updateMotorShield();
+    for (int i = 0; i < 4; i++) {
+      dirs[i] = cmdDirs[i];
+      pwms[i] = cmdPwms[i];
+    }
     interrupts();
+    updateMotorShield();
   }
   if (cmdUpdateServoH) {
+    noInterrupts();
     cmdUpdateServoH = false;
+    int hServoVal = cmdServoValH;
+    interrupts();
     updateServo(servoH, hServoVal);
   }
   if (cmdUpdateServoV) {
+    noInterrupts();
     cmdUpdateServoV = false;
+    int vServoVal = cmdServoValV;
+    interrupts();
     updateServo(servoV, vServoVal);
   }
   unsigned long currTime = millis();
@@ -149,24 +162,24 @@ void receiveEvent(int bytesReceived)
   while (ind <= bytesReceived - 1) {
     switch(buf[ind]){
       case 0x0C:
-        dirs[0] = buf[ind + 1];
-        pwms[0] = buf[ind + 2];
-        dirs[1] = buf[ind + 3];
-        pwms[1] = buf[ind + 4];
-        dirs[2] = buf[ind + 5];
-        pwms[2] = buf[ind + 6];
-        dirs[3] = buf[ind + 7];
-        pwms[3] = buf[ind + 8];
+        cmdDirs[0] = buf[ind + 1];
+        cmdPwms[0] = buf[ind + 2];
+        cmdDirs[1] = buf[ind + 3];
+        cmdPwms[1] = buf[ind + 4];
+        cmdDirs[2] = buf[ind + 5];
+        cmdPwms[2] = buf[ind + 6];
+        cmdDirs[3] = buf[ind + 7];
+        cmdPwms[3] = buf[ind + 8];
         ind += 9;
         cmdUpdateMotor = true;
         break;
       case 0x0A:
-        hServoVal = buf[ind + 1];
+        cmdServoValH = buf[ind + 1];
         ind += 2;
         cmdUpdateServoH = true;
         break;
       case 0x0B:
-        vServoVal = buf[ind + 1];
+        cmdServoValV = buf[ind + 1];
         ind += 2;
         cmdUpdateServoV = true;
         break;
