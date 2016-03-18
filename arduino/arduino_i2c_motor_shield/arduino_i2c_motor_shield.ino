@@ -101,12 +101,14 @@ void loop() {
 }
 
 void readSensor() {
+//  unsigned long t1 = micros();
   int a0 = analogRead(A0);
   int a1 = analogRead(A1);
   noInterrupts();
   valueA0 = a0;
   valueA1 = a1;
   interrupts();
+//  Serial.println(micros() - t1);
 }
 
 void updateServo(Servo servo, int value) {
@@ -152,6 +154,18 @@ void receiveEvent(int bytesReceived)
   for (int a = 0; a < bytesReceived; a++)
   {
     buf[a] = Wire.read();
+  }
+  if (buf[0] == 0x0D) {
+    if (bytesReceived == 4) {
+      byte wheel = buf[1];
+      cmdDirs[wheel] = buf[2];
+      cmdPwms[wheel] = buf[3];
+      cmdUpdateMotor = true;
+      return;
+    } else {
+      //TODO error
+    }
+    
   }
 
   cmdUpdateMotor = false;

@@ -90,6 +90,17 @@ void updateSlave2(uint8_t * payload) {
   //}
 }
 
+void updateWheel(uint8_t * payload) {
+    Wire.beginTransmission(SLAVE_ADDR);
+      Wire.write(0x0D);
+      Wire.write(payload[1]);
+      Wire.write(payload[2]);
+      Wire.write(payload[3]);
+    if (Wire.endTransmission() != 0) {
+      USE_SERIAL.println("Error2");
+    }
+}
+
 void parseMotorCommand(String cmdStr, int pos) {
   lDir = cmdStr.charAt(pos + 1);
   rDir = cmdStr.charAt(pos + 5);
@@ -145,6 +156,10 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 
             if (payload[0] == 0x0C && lenght == 5) {
               updateSlave2(payload);
+            } else 
+            if (payload[0] == 0x0D) {
+//              lenght == 4
+              updateWheel(payload);
             }
             // send message to client
             // webSocket.sendBIN(num, payload, lenght);

@@ -57,14 +57,32 @@
         <td>
             <input type="range" id="speed1" min="0" max="255">
             <br/>
-            <button onclick="runWheel(1);">Run</button>
-            <button onclick="stopWheel(1);">Stop</button>
+            <button onclick="runF(0);">F</button>
+            <button onclick="runB(0);">B</button>
+            <button onclick="stopWheel(0);">S</button>
         </td>
         <td>
             <input type="range" id="speed2" min="0" max="255">
             <br/>
-            <button onclick="runWheel(2);">Run</button>
-            <button onclick="stopWheel(2);">Stop</button>
+            <button onclick="runF(2);">F</button>
+            <button onclick="runB(2);">B</button>
+            <button onclick="stopWheel(2);">S</button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <input type="range" id="speed1" min="0" max="255">
+            <br/>
+            <button onclick="runF(1);">F</button>
+            <button onclick="runB(1);">B</button>
+            <button onclick="stopWheel(1);">S</button>
+        </td>
+        <td>
+            <input type="range" id="speed2" min="0" max="255">
+            <br/>
+            <button onclick="runF(3);">F</button>
+            <button onclick="runB(3);">B</button>
+            <button onclick="stopWheel(3);">S</button>
         </td>
     </tr>
 </table>
@@ -100,17 +118,23 @@
         }
     };
 
-    function runWheel(num) {
-        var ba = bbb(0, 255);
+    function runF(num) {
+        var ba = buildCmd1Wheel(num, 1, 255);
+        send2(ba);
+    }
+
+    function runB(num) {
+        var ba = buildCmd1Wheel(num, 2, 255);
         send2(ba);
     }
 
     function stopWheel(num) {
-        var ba = bbb(0, 0);
+        var ba = buildCmd1Wheel(num, 3, 255);
         send2(ba);
     }
 
     function send(cmd) {
+        console.log("send: " + cmd);
 //        connection.send(cmd);
         connection.send(cmd.buffer);
     }
@@ -148,11 +172,11 @@
         //var l = getDirAndSpeed(Math.round(x));
         //var r = getDirAndSpeed(Math.round(y));
         //return '#' + l.d + l.s + r.d + r.s;
-        var bytearray = bbb(x, y);
+        var bytearray = buildCmdAllWheels(x, y);
         return bytearray;
     }
 
-    function bbb(x, y) {
+    function buildCmdAllWheels(x, y) {
         var bytearray = new Uint8Array(5);
         bytearray[0] = 0x0C;
         bytearray[1] = getDir(x);
@@ -160,6 +184,15 @@
         bytearray[3] = getDir(y);
         bytearray[4] = getSpeed(y);
         return bytearray;
+    }
+
+    function buildCmd1Wheel(wheel, dir, speed) {
+        var ba = new Uint8Array(4);
+        ba[0] = 0x0D;
+        ba[1] = wheel;
+        ba[2] = dir;
+        ba[3] = speed;
+        return ba;
     }
 
     function getDir(c) {
