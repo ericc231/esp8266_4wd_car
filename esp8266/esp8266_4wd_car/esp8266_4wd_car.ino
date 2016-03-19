@@ -1,9 +1,9 @@
 /*
- * WebSocketServer_LEDcontrol.ino
- *
- *  Created on: 26.11.2015
- *
- */
+   WebSocketServer_LEDcontrol.ino
+
+    Created on: 26.11.2015
+
+*/
 
 #include <Arduino.h>
 
@@ -27,154 +27,40 @@ WebSocketsServer webSocket = WebSocketsServer(81);
 
 SimpleTimer ttt;
 
-char lDir = 'f';
-char rDir = 'f';
-int lPwm = 255;
-int rPwm = 255;
-uint8_t clientNum = -1;
 int valueA0;
 int valueA1;
 
-byte dirToByte(char cmd) {
-  switch (cmd) {
-    case 'f':
-      return 1;
-    case 'b':
-      return 2;
-    case 's':
-      return 3;
-  }
-  //TODO brake, release
-  return 4;
-}
-
-void updateSlave() {
-  //if (cmdUpdateMotor || cmdUpdateServoH || cmdUpdateServoV) {
-    Wire.beginTransmission(SLAVE_ADDR);
-  //  if (cmdUpdateMotor) {
-      Wire.write(0x0C);
-
-      Wire.write(dirToByte(lDir));
-      Wire.write(lPwm);
-      Wire.write(dirToByte(lDir));
-      Wire.write(lPwm);
-
-      Wire.write(dirToByte(rDir));
-      Wire.write(rPwm);
-      Wire.write(dirToByte(rDir));
-      Wire.write(rPwm);
-    //}
-    Wire.endTransmission();
-  //}
-}
-
 void updateSlave2(uint8_t * payload) {
   //if (cmdUpdateMotor || cmdUpdateServoH || cmdUpdateServoV) {
-    Wire.beginTransmission(SLAVE_ADDR);
+  Wire.beginTransmission(SLAVE_ADDR);
   //  if (cmdUpdateMotor) {
-      Wire.write(0x0C);
+  Wire.write(0x0C);
 
-      Wire.write(payload[1]);
-      Wire.write(payload[2]);
-      Wire.write(payload[1]);
-      Wire.write(payload[2]);
+  Wire.write(payload[1]);
+  Wire.write(payload[2]);
+  Wire.write(payload[1]);
+  Wire.write(payload[2]);
 
-      Wire.write(payload[3]);
-      Wire.write(payload[4]);
-      Wire.write(payload[3]);
-      Wire.write(payload[4]);
-    //}
-    if (Wire.endTransmission() != 0) {
-      USE_SERIAL.println("Error");
-    }
+  Wire.write(payload[3]);
+  Wire.write(payload[4]);
+  Wire.write(payload[3]);
+  Wire.write(payload[4]);
+  //}
+  if (Wire.endTransmission() != 0) {
+    USE_SERIAL.println("Error");
+  }
   //}
 }
 
 void updateWheel(uint8_t * payload) {
-    Wire.beginTransmission(SLAVE_ADDR);
-      Wire.write(0x0D);
-      Wire.write(payload[1]);
-      Wire.write(payload[2]);
-      Wire.write(payload[3]);
-    if (Wire.endTransmission() != 0) {
-      USE_SERIAL.println("Error2");
-    }
-}
-
-void parseMotorCommand(String cmdStr, int pos) {
-  lDir = cmdStr.charAt(pos + 1);
-  rDir = cmdStr.charAt(pos + 5);
-  String lPwmStr = cmdStr.substring(pos + 2, pos + 5);
-  String rPwmStr = cmdStr.substring(pos + 6, pos + 9);
-  lPwm = lPwmStr.toInt();
-  rPwm = rPwmStr.toInt();
-  //Serial.println(lPwm);
-  //      Serial.println(rPwm);
-}
-
-void sendPong(uint8_t clNum) {
-    uint8_t payload[1];
-    payload[0] = 0x0B;
-    webSocket.sendBIN(clNum, payload, 1);
-}
-
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght) {
-
-    switch(type) {
-        case WStype_DISCONNECTED:
-            USE_SERIAL.printf("[%u] Disconnected!\n", num);
-            clientNum = -1;
-            break;
-        case WStype_CONNECTED: {
-            IPAddress ip = webSocket.remoteIP(num);
-            USE_SERIAL.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
-
-            // send message to client
-            webSocket.sendTXT(num, "Connected");
-            clientNum = num;
-        }
-            break;
-        case WStype_TEXT:
-            USE_SERIAL.printf("[%u] get Text: %s\n", num, payload);
-
-            if(payload[0] == '#') {
-                // we get RGB data
-
-                // decode rgb data
-                //uint32_t rgb = (uint32_t) strtol((const char *) &payload[1], NULL, 16);
-                //lPwm = (rgb >> 16) & 0xFF;
-                //rPwm = (rgb >> 8) & 0xFF;
-
-                String cmdStr = String((const char *)payload);
-                parseMotorCommand(cmdStr, 0);
-                
-                updateSlave();
-//                analogWrite(LED_RED,    ((rgb >> 16) & 0xFF));
-//                analogWrite(LED_GREEN,  ((rgb >> 8) & 0xFF));
-//                analogWrite(LED_BLUE,   ((rgb >> 0) & 0xFF));
-            }
-
-            break;
-
-        case WStype_BIN:
-//            USE_SERIAL.printf("[%u] get binary lenght: %u\n", num, lenght);
-//            hexdump(payload, lenght);
-
-            if (payload[0] == 0x0C && lenght == 5) {
-              updateSlave2(payload);
-            } else 
-            if (payload[0] == 0x0D) {
-//              lenght == 4
-              updateWheel(payload);
-            } else if (payload[0] == 0x01) {
-              sendPong(num);
-            }
-            // send message to client
-            // webSocket.sendBIN(num, payload, lenght);
-            break;
-            
-    }
-
+  Wire.beginTransmission(SLAVE_ADDR);
+  Wire.write(0x0D);
+  Wire.write(payload[1]);
+  Wire.write(payload[2]);
+  Wire.write(payload[3]);
+  if (Wire.endTransmission() != 0) {
+    USE_SERIAL.println("Error2");
+  }
 }
 
 void readSensors() {
@@ -191,92 +77,127 @@ void readSensors() {
   }
 }
 
-void zzzzz()
+void sendSensors(uint8_t clientNum)
 {
-  if (clientNum != -1) {
-    unsigned long t1 = millis();
-    unsigned long uptime = millis();
-    uptime = uptime / 1000;
+  unsigned long uptime = millis();
+  uptime = uptime / 1000;
 
-    readSensors();
-    unsigned long t2 = millis();
-    
-    int len = 8;
-    int i = 0;
-    uint8_t payload[len];
-    int a = valueA0;
-    int v = valueA1;
-    payload[i++] = 0x0A;
+  readSensors();
 
-    payload[i++] = uptime >> 16;
-    payload[i++] = (uptime << 8) >> 16;
-    payload[i++] = uptime & 255;
-    
-    payload[i++] = a >> 8;
-    payload[i++] = a & 255;
-    payload[i++] = v >> 8;
-    payload[i++] = v & 255;
+  int len = 8;
+  int i = 0;
+  uint8_t payload[len];
+  int a = valueA0;
+  int v = valueA1;
+  payload[i++] = 0x0A;
 
-unsigned long t3 = millis();
-    
-//  webSocket.sendBIN(clientNum, payload, len);
-  USE_SERIAL.print(t2 - t1);
-  USE_SERIAL.print(" ");
-  USE_SERIAL.println(t3 - t1);
+  payload[i++] = uptime >> 16;
+  payload[i++] = (uptime << 8) >> 16;
+  payload[i++] = uptime & 255;
+
+  payload[i++] = a >> 8;
+  payload[i++] = a & 255;
+  payload[i++] = v >> 8;
+  payload[i++] = v & 255;
+
+  webSocket.sendBIN(clientNum, payload, len);
+}
+
+void sendOk(uint8_t clientNum, uint8_t cmd)
+{
+  uint8_t payload[1];
+  payload[0] = cmd;
+  webSocket.sendBIN(clientNum, payload, 1);
+}
+
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght) {
+
+  switch (type) {
+    case WStype_DISCONNECTED:
+      USE_SERIAL.printf("[%u] Disconnected!\n", num);
+      break;
+    case WStype_CONNECTED: {
+        IPAddress ip = webSocket.remoteIP(num);
+        USE_SERIAL.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+        // send message to client
+        webSocket.sendTXT(num, "Connected");
+      }
+      break;
+    case WStype_BIN:
+      // TODO err
+      uint8_t cmd = payload[0];
+      switch (cmd) {
+        case 0x0A:
+          sendOk(num, cmd);
+          break;
+        case 0x0B:
+          sendSensors(num);
+          break;
+        case 0x0C:
+          updateSlave2(payload);
+          sendOk(num, cmd);
+          break;
+        case 0x0D:
+          updateWheel(payload);
+          sendOk(num, cmd);
+          break;
+      }
+      break;
   }
+
 }
 
 void setup() {
-    //USE_SERIAL.begin(921600);
-    USE_SERIAL.begin(115200);
+  //USE_SERIAL.begin(921600);
+  USE_SERIAL.begin(115200);
 
-    //USE_SERIAL.setDebugOutput(true);
+  //USE_SERIAL.setDebugOutput(true);
 
-    USE_SERIAL.println();
-    USE_SERIAL.println();
-    USE_SERIAL.println();
+  USE_SERIAL.println();
+  USE_SERIAL.println();
+  USE_SERIAL.println();
 
-    for(uint8_t t = 4; t > 0; t--) {
-        USE_SERIAL.printf("[SETUP] BOOT WAIT %d...\n", t);
-        USE_SERIAL.flush();
-        delay(1000);
-    }
+  for (uint8_t t = 4; t > 0; t--) {
+    USE_SERIAL.printf("[SETUP] BOOT WAIT %d...\n", t);
+    USE_SERIAL.flush();
+    delay(1000);
+  }
 
-    Wire.begin();
-  
-    WiFiMulti.addAP("paradise2", "wifi12345!");
+  Wire.begin();
 
-    while(WiFiMulti.run() != WL_CONNECTED) {
-        delay(100);
-    }
+  WiFiMulti.addAP("paradise2", "wifi12345!");
 
-    // start webSocket server
-    webSocket.begin();
-    webSocket.onEvent(webSocketEvent);
+  while (WiFiMulti.run() != WL_CONNECTED) {
+    delay(100);
+  }
 
-    if(MDNS.begin("esp8266")) {
-        USE_SERIAL.println("MDNS responder started");
-    }
+  // start webSocket server
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
 
-    // handle index
-    server.on("/", []() {
-        // send index.html
-        server.send(200, "text/html", "<html><head><script>var connection = new WebSocket('ws://'+location.hostname+':81/', ['arduino']);connection.onopen = function () {  connection.send('Connect ' + new Date()); }; connection.onerror = function (error) {    console.log('WebSocket Error ', error);};connection.onmessage = function (e) {  console.log('Server: ', e.data);};function sendRGB() {  var r = parseInt(document.getElementById('r').value).toString(16);  var g = parseInt(document.getElementById('g').value).toString(16);  var b = parseInt(document.getElementById('b').value).toString(16);  if(r.length < 2) { r = '0' + r; }   if(g.length < 2) { g = '0' + g; }   if(b.length < 2) { b = '0' + b; }   var rgb = '#'+r+g+b;    console.log('RGB: ' + rgb); connection.send(rgb); }</script></head><body>LED Control:<br/><br/>R: <input id=\"r\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" onchange=\"sendRGB();\" /><br/>G: <input id=\"g\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" onchange=\"sendRGB();\" /><br/>B: <input id=\"b\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" onchange=\"sendRGB();\" /><br/></body></html>");
-    });
+  if (MDNS.begin("esp8266")) {
+    USE_SERIAL.println("MDNS responder started");
+  }
 
-    server.begin();
+  // handle index
+  server.on("/", []() {
+    // send index.html
+    server.send(200, "text/html", "<html><head><script>var connection = new WebSocket('ws://'+location.hostname+':81/', ['arduino']);connection.onopen = function () {  connection.send('Connect ' + new Date()); }; connection.onerror = function (error) {    console.log('WebSocket Error ', error);};connection.onmessage = function (e) {  console.log('Server: ', e.data);};function sendRGB() {  var r = parseInt(document.getElementById('r').value).toString(16);  var g = parseInt(document.getElementById('g').value).toString(16);  var b = parseInt(document.getElementById('b').value).toString(16);  if(r.length < 2) { r = '0' + r; }   if(g.length < 2) { g = '0' + g; }   if(b.length < 2) { b = '0' + b; }   var rgb = '#'+r+g+b;    console.log('RGB: ' + rgb); connection.send(rgb); }</script></head><body>LED Control:<br/><br/>R: <input id=\"r\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" onchange=\"sendRGB();\" /><br/>G: <input id=\"g\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" onchange=\"sendRGB();\" /><br/>B: <input id=\"b\" type=\"range\" min=\"0\" max=\"255\" step=\"1\" onchange=\"sendRGB();\" /><br/></body></html>");
+  });
 
-    // Add service to MDNS
-    MDNS.addService("http", "tcp", 80);
-    MDNS.addService("ws", "tcp", 81);
+  server.begin();
 
-    ttt.setInterval(1000L, zzzzz);
+  // Add service to MDNS
+  MDNS.addService("http", "tcp", 80);
+  MDNS.addService("ws", "tcp", 81);
+
+  //    ttt.setInterval(1000L, zzzzz);
 }
 
 
 void loop() {
-    webSocket.loop();
-    server.handleClient();
-    ttt.run();
+  webSocket.loop();
+  server.handleClient();
+//  ttt.run();
 }
 

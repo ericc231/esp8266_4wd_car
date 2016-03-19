@@ -104,10 +104,10 @@
     connection.onmessage = function (e) {
 //        console.log('Server: ', e.data);
         var bytearray = new Uint8Array(event.data);
-        if (bytearray[0] == 0x0B) {
+        if (bytearray[0] == 0x0A) {
             displayPong();
         } else
-        if (bytearray[0] == 0x0A && bytearray.length == 8) {
+        if (bytearray[0] == 0x0B && bytearray.length == 8) {
 
             var uptime = (bytearray[1] << 16) | (bytearray[2] << 8) | bytearray[3];
             var outputEl = document.getElementById('uptime');
@@ -130,7 +130,7 @@
         outputEl.innerHTML = '';
         pingStart = new Date().getTime();
         var ba = new Uint8Array(1);
-        ba[0] = 0x01;
+        ba[0] = 0x0A;
         send2(ba);
     }
 
@@ -274,7 +274,7 @@
         var cmd = buildCmd(coord);
         var outputEl = document.getElementById('result');
         outputEl.innerHTML = '<b>cmd</b>: ' + cmd;
-        send(cmd);
+//        send(cmd);
     }, 1 / 20 * 1000);
 
     function calc() {
