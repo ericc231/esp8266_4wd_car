@@ -77,7 +77,7 @@ void readSensors() {
   }
 }
 
-void sendSensors(uint8_t clientNum)
+void sendSensors(uint8_t clientNum, uint8_t cmd)
 {
   unsigned long uptime = millis();
   uptime = uptime / 1000;
@@ -89,7 +89,7 @@ void sendSensors(uint8_t clientNum)
   uint8_t payload[len];
   int a = valueA0;
   int v = valueA1;
-  payload[i++] = 0x0A;
+  payload[i++] = cmd;
 
   payload[i++] = uptime >> 16;
   payload[i++] = (uptime << 8) >> 16;
@@ -131,7 +131,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
           sendOk(num, cmd);
           break;
         case 0x0B:
-          sendSensors(num);
+          sendSensors(num, cmd);
           break;
         case 0x0C:
           updateSlave2(payload);

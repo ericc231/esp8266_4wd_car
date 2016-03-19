@@ -108,22 +108,12 @@
             displayPong();
         } else
         if (bytearray[0] == 0x0B && bytearray.length == 8) {
-
-            var uptime = (bytearray[1] << 16) | (bytearray[2] << 8) | bytearray[3];
-            var outputEl = document.getElementById('uptime');
-            outputEl.innerHTML = uptime;
-
-            var amp = (bytearray[4] << 8) | bytearray[5];
-            outputEl = document.getElementById('amp');
-            outputEl.innerHTML = amp;
-
-            var volt = (bytearray[6] << 8) | bytearray[7];
-            outputEl = document.getElementById('volt');
-            outputEl.innerHTML = volt;
+            displaySensor(bytearray)
         }
     };
 
     var pingStart;
+    var sensorStart;
 
     function sendPing() {
         var outputEl = document.getElementById('pingTime');
@@ -132,6 +122,33 @@
         var ba = new Uint8Array(1);
         ba[0] = 0x0A;
         send2(ba);
+    }
+
+    function sendSensor() {
+        sensorStart = new Date().getTime();
+        var ba = new Uint8Array(1);
+        ba[0] = 0x0B;
+        send2(ba);
+    }
+
+    function displaySensor(bytearray) {
+        var end = new Date().getTime();
+        var time = end - sensorStart;
+//        console.log("pong: " + time)
+        var outputEl = document.getElementById('pingTime');
+        outputEl.innerHTML = time;
+
+        var uptime = (bytearray[1] << 16) | (bytearray[2] << 8) | bytearray[3];
+        outputEl = document.getElementById('uptime');
+        outputEl.innerHTML = uptime;
+
+        var amp = (bytearray[4] << 8) | bytearray[5];
+        outputEl = document.getElementById('amp');
+        outputEl.innerHTML = amp;
+
+        var volt = (bytearray[6] << 8) | bytearray[7];
+        outputEl = document.getElementById('volt');
+        outputEl.innerHTML = volt;
     }
 
     function displayPong() {
@@ -158,18 +175,17 @@
     }
 
     function send(cmd) {
-        console.log("send: " + cmd);
+//        console.log("send: " + cmd);
 //        connection.send(cmd);
         connection.send(cmd.buffer);
     }
 
     function send2(cmd) {
-        console.log(cmd);
+//        console.log(cmd);
         connection.send(cmd);
     }
 
     var sc45 = sinDegrees(45);
-    console.log(sc45);
     var R1 = 100;
     var R2 = R1 * sc45;
 
@@ -274,6 +290,7 @@
         var cmd = buildCmd(coord);
         var outputEl = document.getElementById('result');
         outputEl.innerHTML = '<b>cmd</b>: ' + cmd;
+        sendSensor();
 //        send(cmd);
     }, 1 / 20 * 1000);
 
