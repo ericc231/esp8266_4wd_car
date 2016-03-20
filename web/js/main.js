@@ -1,66 +1,19 @@
-var main = (function () {
-
-    //        var addr = location.hostname;
-    var addr = '192.168.2.41';
+var main = (function (executor) {
 
     var SENSOR_POLL = 4;
     var MOTOR_POLL = 4;
-    var CMD_TIMEOUT = 50;
-    var connection;
     var joystick;
     var pingStart;
     var sensorStart;
     var motorStart;
     var moving;
-    var commandInProgress = false;
-
-    var queue = [];
-
-    var timeOutErrorCount = 0;
-    var checkResultTimer;
-
-    function checkTimeout() {
-        timeOutErrorCount++;
-        $("#errorMsg").text("Timeout error, count: " + timeOutErrorCount);
-        $("#errorMsg").show();
-        // TODO clear queue
-        doCheckAndSend(true);
-    }
-
-    function checkAndSend() {
-        doCheckAndSend(false);
-    }
-
-    function doCheckAndSend(tmout) {
-        if (!tmout) {
-            clearTimeout(checkResultTimer);
-        }
-        commandInProgress = true;
-        var cmd = queue.shift();
-        if (cmd != undefined) {
-            checkResultTimer = setTimeout(checkTimeout, CMD_TIMEOUT);
-            cmd.callback();
-        } else {
-            commandInProgress = false;
-        }
-    }
-
-    function waitForSend(callback){
-        queue.push({callback: callback});
-        if (commandInProgress) {
-           return;
-        }
-        checkAndSend();
-    }
 
     function sendPing() {
         $("#pingTime").text('');
         pingStart = new Date().getTime();
-        waitForSend(function() {
-            var ba = new Uint8Array(1);
-            ba[0] = 0x0A;
-            send2(ba);
-        });
+        var ba = new Uint8Array(1);
+        ba[0] = 0x0A;
+        executor.send(ba);
     }
 
     var pollSensors = function () {
@@ -72,9 +25,7 @@ var main = (function () {
         var cmd = buildCmd(coord);
         $("#result").text(cmd);
         motorStart = new Date().getTime();
-        waitForSend(function() {
-            send2(cmd.buffer);
-        });
+        executor.send(cmd.buffer);
     };
 
     function onReplyMotor() {
@@ -96,11 +47,9 @@ var main = (function () {
 
     function sendSensor() {
         sensorStart = new Date().getTime();
-        waitForSend(function() {
-            var ba = new Uint8Array(1);
-            ba[0] = 0x0B;
-            send2(ba);
-        });
+        var ba = new Uint8Array(1);
+        ba[0] = 0x0B;
+        executor.send(ba);
     }
 
     function displaySensor(bytearray) {
@@ -132,29 +81,17 @@ var main = (function () {
 
     function runF(num) {
         var ba = buildCmd1Wheel(num, 1, 255);
-        waitForSend(function() {
-            send2(ba);
-        });
+        executor.send(ba);
     }
 
     function runB(num) {
         var ba = buildCmd1Wheel(num, 2, 255);
-        waitForSend(function() {
-            send2(ba);
-        });
+        executor.send(ba);
     }
 
     function stopWheel(num) {
         var ba = buildCmd1Wheel(num, 3, 255);
-        waitForSend(function() {
-            send2(ba);
-        });
-    }
-
-    function send2(cmd) {
-        if (connection.readyState === 1) {
-            connection.send(cmd);
-        }
+        executor.send(ba);
     }
 
     var sc45 = sinDegrees(45);
@@ -235,50 +172,6 @@ var main = (function () {
         return Math.sin(angle / 180 * Math.PI);
     }
 
-    // Make the function wait until the connection is made...
-    function waitForSocketConnection(socket, callback){
-        setTimeout(
-            function () {
-                if (socket.readyState === 1) {
-                    console.log("Connection is made")
-                    if(callback != null){
-                        callback();
-                    }
-                    return;
-
-                } else {
-                    console.log("wait for connection...")
-                    waitForSocketConnection(socket, callback);
-                }
-
-            }, 5); // wait 5 milisecond for the connection...
-    }
-
-    function initWebsocket() {
-        connection = new WebSocket('ws://' + addr + ':81/', ['arduino']);
-        connection.binaryType = "arraybuffer";
-        connection.onopen = function () {
-            //connection.send('Connect ' + new Date());
-        };
-        connection.onerror = function (error) {
-            console.log('WebSocket Error ', error);
-        };
-        connection.onmessage = function (e) {
-//        console.log('Server: ', e.data);
-            var bytearray = new Uint8Array(event.data);
-            if (bytearray[0] == 0x0A) {
-                displayPong();
-            } else if (bytearray[0] == 0x0B && bytearray.length == 8) {
-                displaySensor(bytearray)
-            } else if (bytearray[0] == 0x0C) {
-                onReplyMotor();
-            }
-            checkAndSend();
-        };
-
-        waitForSocketConnection(connection, pollSensors);
-    }
-
     function initJoystick() {
         console.log("touchscreen is", VirtualJoystick.touchScreenAvailable() ? "available" : "not available");
 
@@ -318,9 +211,21 @@ var main = (function () {
         });
     }
 
+    function onMsg(event) {
+        var bytearray = new Uint8Array(event.data);
+        if (bytearray[0] == 0x0A) {
+            displayPong();
+        } else if (bytearray[0] == 0x0B && bytearray.length == 8) {
+            displaySensor(bytearray)
+        } else if (bytearray[0] == 0x0C) {
+            onReplyMotor();
+        }
+    }
+
     function docReady() {
         console.log("ready!");
-        initWebsocket();
+        executor.init(onMsg);
+        executor.startJob(pollSensors)
         initJoystick();
         initWheels();
         $("#pingBtn").click(function () {
@@ -336,4 +241,4 @@ var main = (function () {
         init: init
     };
 
-})();
+})(executor);
