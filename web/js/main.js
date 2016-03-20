@@ -23,11 +23,18 @@ var main = (function () {
         timeOutErrorCount++;
         $("#errorMsg").text("Timeout error, count: " + timeOutErrorCount);
         $("#errorMsg").show();
-        checkAndSend();
+        // TODO clear queue
+        doCheckAndSend(true);
     }
 
     function checkAndSend() {
-        clearTimeout(checkResultTimer);
+        doCheckAndSend(false);
+    }
+
+    function doCheckAndSend(tmout) {
+        if (!tmout) {
+            clearTimeout(checkResultTimer);
+        }
         commandInProgress = true;
         var cmd = queue.shift();
         if (cmd != undefined) {
