@@ -218,12 +218,14 @@ VirtualJoystick.prototype._onMove	= function(x, y)
 
 VirtualJoystick.prototype._onMouseUp	= function(event)
 {
+	this.dispatchEvent('touchEnd', event);
 	return this._onUp();
 }
 
 VirtualJoystick.prototype._onMouseDown	= function(event)
 {
 	event.preventDefault();
+	this.dispatchEvent('touchStart', event);
 	var x	= event.clientX;
 	var y	= event.clientY;
 	return this._onDown(x, y);

@@ -124,6 +124,10 @@
         send2(ba);
     }
 
+    var pollSensors = function () {
+        sendSensor();
+    };
+
     function sendSensor() {
         sensorStart = new Date().getTime();
         var ba = new Uint8Array(1);
@@ -132,11 +136,17 @@
     }
 
     function displaySensor(bytearray) {
-        var end = new Date().getTime();
-        var time = end - sensorStart;
-//        console.log("pong: " + time)
+        var endTime = new Date().getTime();
+        var latency = endTime - sensorStart;
+        //updateLatency(latency);
+        var nextRun = 50 - latency;
+        if (nextRun < 0) {
+            nextRun = 0;
+        }
+        setTimeout(pollSensors, nextRun);
+
         var outputEl = document.getElementById('pingTime');
-        outputEl.innerHTML = time;
+        outputEl.innerHTML = latency;
 
         var uptime = (bytearray[1] << 16) | (bytearray[2] << 8) | bytearray[3];
         outputEl = document.getElementById('uptime');
@@ -181,8 +191,9 @@
     }
 
     function send2(cmd) {
-//        console.log(cmd);
-        connection.send(cmd);
+        if (connection.readyState === 1) {
+            connection.send(cmd);
+        }
     }
 
     var sc45 = sinDegrees(45);
@@ -290,7 +301,7 @@
         var cmd = buildCmd(coord);
         var outputEl = document.getElementById('result');
         outputEl.innerHTML = '<b>cmd</b>: ' + cmd;
-        sendSensor();
+//        sendSensor();
 //        send(cmd);
     }, 1 / 20 * 1000);
 
@@ -305,6 +316,27 @@
     function sinDegrees(angle) {
         return Math.sin(angle / 180 * Math.PI);
     }
+
+    // Make the function wait until the connection is made...
+    function waitForSocketConnection(socket, callback){
+        setTimeout(
+                function () {
+                    if (socket.readyState === 1) {
+                        console.log("Connection is made")
+                        if(callback != null){
+                            callback();
+                        }
+                        return;
+
+                    } else {
+                        console.log("wait for connection...")
+                        waitForSocketConnection(socket, callback);
+                    }
+
+                }, 5); // wait 5 milisecond for the connection...
+    }
+
+    waitForSocketConnection(connection, pollSensors);
 
 </script>
 </body>
