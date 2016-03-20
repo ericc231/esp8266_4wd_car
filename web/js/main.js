@@ -5,6 +5,7 @@ var main = (function () {
 
     var SENSOR_POLL = 4;
     var MOTOR_POLL = 4;
+    var CMD_TIMEOUT = 50;
     var connection;
     var joystick;
     var pingStart;
@@ -15,10 +16,22 @@ var main = (function () {
 
     var queue = [];
 
+    var timeOutErrorCount = 0;
+    var checkResultTimer;
+
+    function checkTimeout() {
+        timeOutErrorCount++;
+        $("#errorMsg").text("Timeout error, count: " + timeOutErrorCount);
+        $("#errorMsg").show();
+        checkAndSend();
+    }
+
     function checkAndSend() {
+        clearTimeout(checkResultTimer);
         commandInProgress = true;
         var cmd = queue.shift();
         if (cmd != undefined) {
+            checkResultTimer = setTimeout(checkTimeout, CMD_TIMEOUT);
             cmd.callback();
         } else {
             commandInProgress = false;
