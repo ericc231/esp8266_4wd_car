@@ -53,6 +53,8 @@
     <span id="result"></span>
 </div>
 <br/>
+Motor latency: <span id="motorLatency"></span>
+<br/>
 <button onclick="sendPing()">Ping</button> time: <span id="pingTime"></span>
 <table>
     <tr>
@@ -109,11 +111,15 @@
         } else
         if (bytearray[0] == 0x0B && bytearray.length == 8) {
             displaySensor(bytearray)
+        } else if (bytearray[0] == 0x0C) {
+            onReplyMotor();
         }
     };
 
     var pingStart;
     var sensorStart;
+    var motorStart;
+    var moving;
 
     function sendPing() {
         var outputEl = document.getElementById('pingTime');
@@ -127,6 +133,33 @@
     var pollSensors = function () {
         sendSensor();
     };
+
+    var pollMotor = function () {
+        var coord = calc();
+        var cmd = buildCmd(coord);
+        var outputEl = document.getElementById('result');
+        outputEl.innerHTML = '<b>cmd</b>: ' + cmd;
+        motorStart = new Date().getTime();
+        send2(cmd.buffer);
+    };
+
+    function onReplyMotor() {
+        var endTime = new Date().getTime();
+        var latency = endTime - motorStart;
+        //updateLatency(latency);
+        var nextRun = 50 - latency;
+        if (nextRun < 0) {
+            nextRun = 0;
+        }
+        if (!moving) {
+            return;
+        }
+        // TODO clear
+        setTimeout(pollMotor, nextRun);
+
+        var outputEl = document.getElementById('motorLatency');
+        outputEl.innerHTML = latency;
+    }
 
     function sendSensor() {
         sensorStart = new Date().getTime();
@@ -182,12 +215,6 @@
     function stopWheel(num) {
         var ba = buildCmd1Wheel(num, 3, 255);
         send2(ba);
-    }
-
-    function send(cmd) {
-//        console.log("send: " + cmd);
-//        connection.send(cmd);
-        connection.send(cmd.buffer);
     }
 
     function send2(cmd) {
@@ -290,20 +317,15 @@
         baseY: 150,
     });
     joystick.addEventListener('touchStart', function () {
+        moving = true;
+        // TODO
+        setTimeout(pollMotor, 0);
         console.log('down')
     })
     joystick.addEventListener('touchEnd', function () {
+        moving = false;
         console.log('up')
     })
-
-    setInterval(function () {
-        var coord = calc();
-        var cmd = buildCmd(coord);
-        var outputEl = document.getElementById('result');
-        outputEl.innerHTML = '<b>cmd</b>: ' + cmd;
-//        sendSensor();
-//        send(cmd);
-    }, 1 / 20 * 1000);
 
     function calc() {
         var x = joystick.deltaX();
