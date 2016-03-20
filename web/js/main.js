@@ -11,8 +11,7 @@ var main = (function () {
     var moving;
 
     function sendPing() {
-        var outputEl = document.getElementById('pingTime');
-        outputEl.innerHTML = '';
+        $("#pingTime").text('');
         pingStart = new Date().getTime();
         var ba = new Uint8Array(1);
         ba[0] = 0x0A;
@@ -26,8 +25,7 @@ var main = (function () {
     var pollMotor = function () {
         var coord = calc();
         var cmd = buildCmd(coord);
-        var outputEl = document.getElementById('result');
-        outputEl.innerHTML = '<b>cmd</b>: ' + cmd;
+        $("#result").text(cmd);
         motorStart = new Date().getTime();
         send2(cmd.buffer);
     };
@@ -46,8 +44,7 @@ var main = (function () {
         // TODO clear
         setTimeout(pollMotor, nextRun);
 
-        var outputEl = document.getElementById('motorLatency');
-        outputEl.innerHTML = latency;
+        $("#motorLatency").text(latency);
     }
 
     function sendSensor() {
@@ -75,15 +72,13 @@ var main = (function () {
         }
         setTimeout(pollSensors, nextRun);
 
-        $("#pingTime").text(latency);
+        $("#sensorLatency").text(latency);
     }
 
     function displayPong() {
         var end = new Date().getTime();
         var time = end - pingStart;
-        console.log("pong: " + time)
-        var outputEl = document.getElementById('pingTime');
-        outputEl.innerHTML = time;
+        $("#pingTime").text(time);
     }
 
     function runF(num) {
@@ -272,6 +267,9 @@ var main = (function () {
         initWebsocket();
         initJoystick();
         initWheels();
+        $("#pingBtn").click(function () {
+            sendPing();
+        });
     }
 
     var init = function () {
