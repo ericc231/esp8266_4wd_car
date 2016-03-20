@@ -3,6 +3,8 @@ var main = (function () {
     //        var addr = location.hostname;
     var addr = '192.168.2.41';
 
+    var SENSOR_POLL = 4;
+    var MOTOR_POLL = 4;
     var connection;
     var joystick;
     var pingStart;
@@ -59,7 +61,7 @@ var main = (function () {
         var endTime = new Date().getTime();
         var latency = endTime - motorStart;
         //updateLatency(latency);
-        var nextRun = 50 - latency;
+        var nextRun = MOTOR_POLL - latency;
         if (nextRun < 0) {
             nextRun = 0;
         }
@@ -93,7 +95,7 @@ var main = (function () {
         var endTime = new Date().getTime();
         var latency = endTime - sensorStart;
         //updateLatency(latency);
-        var nextRun = 50 - latency;
+        var nextRun = SENSOR_POLL - latency;
         if (nextRun < 0) {
             nextRun = 0;
         }
