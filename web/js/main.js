@@ -11,23 +11,24 @@ var main = (function () {
     var moving;
     var commandInProgress = false;
 
+    var queue = [];
+
+    function checkAndSend() {
+        commandInProgress = true;
+        var cmd = queue.shift();
+        if (cmd != undefined) {
+            cmd.callback();
+        } else {
+            commandInProgress = false;
+        }
+    }
+
     function waitForSend(callback){
-        callback();
-        //return;
-        //if (!commandInProgress) {
-        //    commandInProgress = true;
-        //    callback();
-        //}
-        //setTimeout(
-        //    function () {
-        //        if (!commandInProgress) {
-        //            commandInProgress = true;
-        //            callback();
-        //            return;
-        //        } else {
-        //            waitForSend(callback);
-        //        }
-        //    }, 1);
+        queue.push({callback: callback});
+        if (commandInProgress) {
+           return;
+        }
+        checkAndSend();
     }
 
     function sendPing() {
@@ -242,7 +243,6 @@ var main = (function () {
         };
         connection.onmessage = function (e) {
 //        console.log('Server: ', e.data);
-            commandInProgress = false;
             var bytearray = new Uint8Array(event.data);
             if (bytearray[0] == 0x0A) {
                 displayPong();
@@ -251,6 +251,7 @@ var main = (function () {
             } else if (bytearray[0] == 0x0C) {
                 onReplyMotor();
             }
+            checkAndSend();
         };
 
         waitForSocketConnection(connection, pollSensors);
