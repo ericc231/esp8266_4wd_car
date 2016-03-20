@@ -9,13 +9,35 @@ var main = (function () {
     var sensorStart;
     var motorStart;
     var moving;
+    var commandInProgress = false;
+
+    function waitForSend(callback){
+        callback();
+        //return;
+        //if (!commandInProgress) {
+        //    commandInProgress = true;
+        //    callback();
+        //}
+        //setTimeout(
+        //    function () {
+        //        if (!commandInProgress) {
+        //            commandInProgress = true;
+        //            callback();
+        //            return;
+        //        } else {
+        //            waitForSend(callback);
+        //        }
+        //    }, 1);
+    }
 
     function sendPing() {
         $("#pingTime").text('');
         pingStart = new Date().getTime();
-        var ba = new Uint8Array(1);
-        ba[0] = 0x0A;
-        send2(ba);
+        waitForSend(function() {
+            var ba = new Uint8Array(1);
+            ba[0] = 0x0A;
+            send2(ba);
+        });
     }
 
     var pollSensors = function () {
@@ -27,7 +49,9 @@ var main = (function () {
         var cmd = buildCmd(coord);
         $("#result").text(cmd);
         motorStart = new Date().getTime();
-        send2(cmd.buffer);
+        waitForSend(function() {
+            send2(cmd.buffer);
+        });
     };
 
     function onReplyMotor() {
@@ -49,9 +73,11 @@ var main = (function () {
 
     function sendSensor() {
         sensorStart = new Date().getTime();
-        var ba = new Uint8Array(1);
-        ba[0] = 0x0B;
-        send2(ba);
+        waitForSend(function() {
+            var ba = new Uint8Array(1);
+            ba[0] = 0x0B;
+            send2(ba);
+        });
     }
 
     function displaySensor(bytearray) {
@@ -83,17 +109,23 @@ var main = (function () {
 
     function runF(num) {
         var ba = buildCmd1Wheel(num, 1, 255);
-        send2(ba);
+        waitForSend(function() {
+            send2(ba);
+        });
     }
 
     function runB(num) {
         var ba = buildCmd1Wheel(num, 2, 255);
-        send2(ba);
+        waitForSend(function() {
+            send2(ba);
+        });
     }
 
     function stopWheel(num) {
         var ba = buildCmd1Wheel(num, 3, 255);
-        send2(ba);
+        waitForSend(function() {
+            send2(ba);
+        });
     }
 
     function send2(cmd) {
@@ -210,6 +242,7 @@ var main = (function () {
         };
         connection.onmessage = function (e) {
 //        console.log('Server: ', e.data);
+            commandInProgress = false;
             var bytearray = new Uint8Array(event.data);
             if (bytearray[0] == 0x0A) {
                 displayPong();
