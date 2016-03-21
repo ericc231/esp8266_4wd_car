@@ -1,7 +1,7 @@
 var main = (function (executor) {
 
-    var SENSOR_POLL = 4;
-    var MOTOR_POLL = 4;
+    var SENSOR_POLL = 500;
+    var MOTOR_POLL = 20;
     var joystick;
     var pingStart;
     var sensorStart;
@@ -58,8 +58,13 @@ var main = (function (executor) {
         var volt = (bytearray[6] << 8) | bytearray[7];
 
         $("#uptime").text(uptime);
-        $("#amp").text(amp);
-        $("#volt").text(volt);
+
+        var AMP_OFFSET = 2500;
+        var BATT_AMP_VOLTS_PER_AMP = 66;
+        var aaa = ((((amp / 1024.0) * 5000) - AMP_OFFSET) / BATT_AMP_VOLTS_PER_AMP);
+
+        $("#amp").text(aaa);
+        $("#volt").text((47 + 10) * volt * 5 / (1024 * 10));
 
         var endTime = new Date().getTime();
         var latency = endTime - sensorStart;
