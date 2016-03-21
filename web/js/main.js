@@ -1,6 +1,6 @@
 var main = (function (executor) {
 
-    var SENSOR_POLL = 500;
+    var SENSOR_POLL = 300;
     var MOTOR_POLL = 20;
     var joystick;
     var pingStart;
