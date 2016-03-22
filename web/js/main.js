@@ -134,10 +134,19 @@ var main = (function (executor) {
         var bytearray = new Uint8Array(5);
         bytearray[0] = 0x0C;
         bytearray[1] = getDir(x);
-        bytearray[2] = getSpeed(x);
+        var s1 = getSpeed(x);
+        s1 = incr(s1);
+        bytearray[2] = s1;
         bytearray[3] = getDir(y);
-        bytearray[4] = getSpeed(y);
+        var s2 = getSpeed(y);
+        s2 = incr(s2);
+        bytearray[4] = s2;
         return bytearray;
+    }
+
+    function incr(a) {
+        // (x-R)2 + y2 = R2
+        return Math.round(Math.sqrt(2*a*255 - a*a));
     }
 
     function buildCmd1Wheel(wheel, dir, speed) {
