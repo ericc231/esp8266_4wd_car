@@ -16,7 +16,8 @@
 #include <Wire.h>
 #include <SimpleTimer.h>
 #define SLAVE_ADDR 0x31 // Slave address, should be changed for other slaves
-
+#define TRIGGER_PIN 12
+int trgNum = 0;
 #define USE_SERIAL Serial
 
 
@@ -192,6 +193,7 @@ void setup() {
   MDNS.addService("ws", "tcp", 81);
 
   //    ttt.setInterval(1000L, zzzzz);
+  pinMode(TRIGGER_PIN, INPUT);
 }
 
 
@@ -199,5 +201,8 @@ void loop() {
   webSocket.loop();
   server.handleClient();
 //  ttt.run();
+  if ( digitalRead(TRIGGER_PIN) == LOW ) {
+    USE_SERIAL.printf("trg: %d\n", trgNum++);
+  }
 }
 
