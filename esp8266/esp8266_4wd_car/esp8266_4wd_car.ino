@@ -64,6 +64,35 @@ void updateWheel(uint8_t * payload) {
   }
 }
 
+void update2Servo(uint8_t * payload) {
+  Wire.beginTransmission(SLAVE_ADDR);
+  Wire.write(0x0A);
+  Wire.write(payload[1]);
+  Wire.write(0x0B);
+  Wire.write(payload[2]);
+  if (Wire.endTransmission() != 0) {
+    USE_SERIAL.println("Error update2Servo");
+  }
+}
+
+void updateServoH(uint8_t * payload) {
+  Wire.beginTransmission(SLAVE_ADDR);
+  Wire.write(0x0A);
+  Wire.write(payload[1]);
+  if (Wire.endTransmission() != 0) {
+    USE_SERIAL.println("Error updateServoH");
+  }
+}
+
+void updateServoV(uint8_t * payload) {
+  Wire.beginTransmission(SLAVE_ADDR);
+  Wire.write(0x0B);
+  Wire.write(payload[1]);
+  if (Wire.endTransmission() != 0) {
+    USE_SERIAL.println("Error updateServoV");
+  }
+}
+
 void readSensors() {
   int res = Wire.requestFrom(SLAVE_ADDR, 4);
   if (res)
@@ -142,6 +171,19 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
           updateWheel(payload);
           sendOk(num, cmd);
           break;
+        case 0x10:
+          update2Servo(payload);
+          sendOk(num, cmd);
+          break;
+        case 0x11:
+          updateServoH(payload);
+          sendOk(num, cmd);
+          break;
+        case 0x12:
+          updateServoV(payload);
+          sendOk(num, cmd);
+          break;
+        
       }
       break;
   }
