@@ -71,7 +71,7 @@ var executor = (function () {
                     return;
 
                 } else {
-                    console.log("wait for connection...")
+                    //console.log("wait for connection...");
                     waitForSocketConnection(socket, callback);
                 }
 

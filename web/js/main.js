@@ -236,12 +236,62 @@ var main = (function (executor) {
         }
     }
 
+    function buildCmd2Servo(servo1, servo2) {
+        var ba = new Uint8Array(3);
+        ba[0] = 0x10;
+        ba[1] = servo1;
+        ba[2] = servo2;
+        return ba;
+    }
+
+    function servoCenter() {
+        var ba = buildCmd2Servo(90, 90);
+        executor.send(ba);
+        $("#servo1range").val(90);
+        $("#servo2range").val(90);
+    }
+
+    function moveServoH(val) {
+        console.log("H: " + val);
+        var ba = new Uint8Array(2);
+        ba[0] = 0x11;
+        ba[1] = val;
+        executor.send(ba);
+    }
+
+    function moveServoV(val) {
+        console.log("V: " + val);
+        var ba = new Uint8Array(2);
+        ba[0] = 0x12;
+        ba[1] = val;
+        executor.send(ba);
+    }
+
+    function initServo() {
+        $("#cameraCenterBtn").click(function () {
+            servoCenter();
+        });
+        // TODO
+        $('input[type=range]').on('input', function () {
+            $(this).trigger('change');
+        });
+        $("#servo1range").change(function () {
+            var newval=$(this).val();
+            moveServoH(newval);
+        });
+        $("#servo2range").change(function () {
+            var newval=$(this).val();
+            moveServoV(newval);
+        });
+    }
+
     function docReady() {
         console.log("ready!");
         executor.init(onMsg);
-        executor.startJob(pollSensors)
+        executor.startJob(pollSensors);
         initJoystick();
         initWheels();
+        initServo();
         $("#pingBtn").click(function () {
             sendPing();
         });
