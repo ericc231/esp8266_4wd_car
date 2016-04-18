@@ -45,9 +45,16 @@
             -webkit-user-select: none;
             -moz-user-select: none;
         }
+
+        #webcam {
+            z-index: -1;
+            position: fixed;
+        }
+
     </style>
 </head>
 <body>
+<div id="webcam"></div>
 <div id="container"></div>
 <div id="errorMsg" style="display: none;"></div>
 <div id="info">
