@@ -190,9 +190,9 @@ var main = (function (executor) {
         console.log("touchscreen is", VirtualJoystick.touchScreenAvailable() ? "available" : "not available");
 
         joystick = new VirtualJoystick({
-            container: document.getElementById('container'),
+            container: document.getElementById('joystickContainer'),
             mouseSupport: true,
-            limitStickTravel: true,
+            // limitStickTravel: true,
             stickRadius: 100,
             stationaryBase: true,
             baseX: 150,

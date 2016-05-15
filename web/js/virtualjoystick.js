@@ -228,6 +228,8 @@ VirtualJoystick.prototype._onMouseDown	= function(event)
 	this.dispatchEvent('touchStart', event);
 	var x	= event.clientX;
 	var y	= event.clientY;
+	// TODO
+	console.log(x + " " + y);
 	return this._onDown(x, y);
 }
 
@@ -326,7 +328,7 @@ VirtualJoystick.prototype._buildJoystickBase	= function()
 	var ctx		= canvas.getContext('2d');
 	ctx.beginPath(); 
 	ctx.strokeStyle = this._strokeStyle; 
-	ctx.lineWidth	= 6; 
+	ctx.lineWidth	= 6;
 	ctx.arc( canvas.width/2, canvas.width/2, 40, 0, Math.PI*2, true); 
 	ctx.stroke();	
 
@@ -363,6 +365,7 @@ VirtualJoystick.prototype._buildJoystickStick	= function()
 
 VirtualJoystick.prototype._move = function(style, x, y)
 {
+	// TODO
 	if (this._transform) {
 		if (this._has3d) {
 			style[this._transform] = 'translate3d(' + x + 'px,' + y + 'px, 0)';
@@ -370,8 +373,14 @@ VirtualJoystick.prototype._move = function(style, x, y)
 			style[this._transform] = 'translate(' + x + 'px,' + y + 'px)';
 		}
 	} else {
-		style.left = x + 'px';
-		style.top = y + 'px';
+		// TODO
+		var rect = document.getElementById("joystickContainer").getBoundingClientRect();
+		var l = rect.left;
+		var t = rect.top;
+		console.log(l + " " + t);
+
+		style.left = (x - l) + 'px';
+		style.top = (y - t) + 'px';
 	}
 }
 
