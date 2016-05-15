@@ -79,8 +79,11 @@ var executor = (function () {
     }
 
     function initWebsocket(onMsg) {
-        connection = new WebSocket('ws://' + addr + ':81/', ['arduino']);
-        connection.binaryType = "arraybuffer";
+        connection = new ReconnectingWebSocket('ws://' + addr + ':81/', null,
+            {
+                binaryType: "arraybuffer",
+                debug: true
+            });
         connection.onopen = function () {
             //connection.send('Connect ' + new Date());
         };
