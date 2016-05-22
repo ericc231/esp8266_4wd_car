@@ -1,1 +1,1 @@
-console.log('\'Allo \'Allo!');
+main2.init();

@@ -18,50 +18,165 @@
     <!-- build:css styles/main.css -->
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
-    
+
     <!-- build:js scripts/vendor/modernizr.js -->
     <script src="/bower_components/modernizr/modernizr.js"></script>
     <!-- endbuild -->
+
+    <style>
+      body {
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+        background-color: #BBB;
+      }
+
+      #info {
+        /*position: absolute;*/
+        top: 0px;
+        width: 100%;
+        padding: 5px;
+        /*text-align: center;*/
+      }
+
+      #info a {
+        color: #66F;
+        text-decoration: none;
+      }
+
+      #info a:hover {
+        text-decoration: underline;
+      }
+
+      #joystickContainer {
+        /*width: 100%;*/
+        /*height: 100%;*/
+        width: 300px;
+        height: 300px;
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        border: solid;
+      }
+
+      #webcam {
+        z-index: -1;
+        position: fixed;
+      }
+
+    </style>
   </head>
   <body>
     <!--[if lt IE 10]>
       <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
-    
+
     <div class="container">
-      <div class="header">
-        <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="#">Home</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-        <h3 class="text-muted">web_pr</h3>
-      </div>
 
-      <div class="jumbotron">
-        <h1>'Allo, 'Allo!</h1>
-        <p class="lead">Always a pleasure scaffolding your apps.</p>
-        <p><a class="btn btn-lg btn-success" href="#">Splendid!</a></p>
-      </div>
+      <!-- Static navbar -->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">4wd car</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="#joystick" data-toggle="tab">Joystick</a></li>
+              <li><a href="#wheels" data-toggle="tab">Wheels</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
 
-      <div class="row marketing">
-        <div class="col-lg-6">
-          <h4>HTML5 Boilerplate</h4>
-          <p>HTML5 Boilerplate is a professional front-end template for building fast, robust, and adaptable web apps or sites.</p>
-          
-          <h4>Bootstrap</h4>
-          <p>Sleek, intuitive, and powerful mobile first front-end framework for faster and easier web development.</p>
-          <h4>Modernizr</h4>
-          <p>Modernizr is an open-source JavaScript library that helps you build the next generation of HTML5 and CSS3-powered websites.</p>
-          
+
+
+      <div id="webcam"></div>
+
+      <div class="tab-content">
+
+        <div role="tabpanel" class="tab-pane active" id="joystick">
+
+          <div id="joystickContainer"></div>
+          <div id="errorMsg" style="display: none;"></div>
+          <div id="info">
+            Uptime: <span id="uptime"></span>
+            <br/>
+            A: <span id="amp"></span>
+            <br/>
+            V: <span id="volt"></span>
+            <br/>
+            Cmd: <span id="result"></span>
+          </div>
+          <br/>
+          Sensor latency: <span id="sensorLatency"></span>
+          <br/>
+          Motor latency: <span id="motorLatency"></span>
+          <br/>
+          <button id="pingBtn">Ping</button> time: <span id="pingTime"></span>
+
+          <button id="cameraCenterBtn">Center</button>
+          <table>
+            <tr>
+              <td>
+                H: <input id="servo1range" type="range" min="0" max="180">
+              </td>
+              <td>
+                V: <input id="servo2range" type="range" min="0" max="180">
+              </td>
+            </tr>
+          </table>
+
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="wheels">
+
+          <table>
+            <tr>
+              <td class="wheelControl" data-wnum="0">
+                <input type="range" min="0" max="255">
+                <br/>
+                <button class="wheelControlF">F</button>
+                <button class="wheelControlB">B</button>
+                <button class="wheelControlS">S</button>
+              </td>
+              <td class="wheelControl" data-wnum="2">
+                <input type="range" min="0" max="255">
+                <br/>
+                <button class="wheelControlF">F</button>
+                <button class="wheelControlB">B</button>
+                <button class="wheelControlS">S</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="wheelControl" data-wnum="1">
+                <input type="range" min="0" max="255">
+                <br/>
+                <button class="wheelControlF">F</button>
+                <button class="wheelControlB">B</button>
+                <button class="wheelControlS">S</button>
+              </td>
+              <td class="wheelControl" data-wnum="3">
+                <input type="range" min="0" max="255">
+                <br/>
+                <button class="wheelControlF">F</button>
+                <button class="wheelControlB">B</button>
+                <button class="wheelControlS">S</button>
+              </td>
+            </tr>
+          </table>
         </div>
       </div>
 
-      <div class="footer">
-        <p>♥ from the Yeoman team</p>
-      </div>
     </div>
-    
+
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
     <script>
       (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
@@ -77,7 +192,7 @@
     <script src="/bower_components/jquery/dist/jquery.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
-    
+
     <!-- build:js scripts/plugins.js -->
     <script src="/bower_components/bootstrap/js/affix.js"></script>
     <script src="/bower_components/bootstrap/js/alert.js"></script>
@@ -92,8 +207,12 @@
     <script src="/bower_components/bootstrap/js/collapse.js"></script>
     <script src="/bower_components/bootstrap/js/tab.js"></script>
     <!-- endbuild -->
-    
+
     <!-- build:js scripts/main.js -->
+    <script src="scripts/virtualjoystick.js"></script>
+    <script src="scripts/reconnecting-websocket.js"></script>
+    <script src="scripts/executor.js"></script>
+    <script src="scripts/main2.js"></script>
     <script src="scripts/main.js"></script>
     <!-- endbuild -->
   </body>
