@@ -1,4 +1,4 @@
-var main2 = (function (executor) {
+var mainPage = (function (executor) {
 
     var SENSOR_POLL = 300;
     var MOTOR_POLL = 20;
