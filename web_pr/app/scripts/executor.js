@@ -82,7 +82,7 @@ var executor = (function () {
         connection = new ReconnectingWebSocket('ws://' + addr + ':81/', null,
             {
                 binaryType: 'arraybuffer',
-                debug: true
+                debug: false
             });
         connection.onopen = function () {
             connection.send('Connect ' + new Date());

@@ -144,6 +144,16 @@ var mainPage = (function (executor) {
         return bytearray;
     }
 
+    function doStop() {
+      var ba = new Uint8Array(5);
+      ba[0] = 0x0C;
+      ba[1] = 1;
+      ba[2] = 0;
+      ba[3] = 1;
+      ba[4] = 0;
+      executor.send(ba);
+    }
+
     function incr(a) {
         // (x-R)2 + y2 = R2
         return Math.round(Math.sqrt(2*a*255 - a*a));
@@ -327,6 +337,9 @@ var mainPage = (function (executor) {
         $('#pingBtn').click(function () {
             sendPing();
         });
+      $('#stopBtn').click(function () {
+        doStop();
+      });
         createImageLayer();
     }
 
