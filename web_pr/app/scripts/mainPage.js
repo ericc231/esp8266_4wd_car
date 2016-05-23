@@ -135,11 +135,12 @@ var mainPage = (function (executor) {
         bytearray[0] = 0x0C;
         bytearray[1] = getDir(x);
         var s1 = getSpeed(x);
-        s1 = incr(s1);
+        // TODO
+        // s1 = incr(s1);
         bytearray[2] = s1;
         bytearray[3] = getDir(y);
         var s2 = getSpeed(y);
-        s2 = incr(s2);
+        // s2 = incr(s2);
         bytearray[4] = s2;
         return bytearray;
     }
@@ -218,6 +219,14 @@ var mainPage = (function (executor) {
             moving = false;
             console.log('up')
         });
+        setInterval(function() {
+          // TODO
+          var x = joystick.deltaX();
+          var y = -joystick.deltaY();
+          var coord = calc();
+          var cmd = buildCmd(coord);
+          $('#cmdLog').text(x + ' ' + y + ' ' + cmd);
+        }, 200);
     }
 
     function initWheels() {
